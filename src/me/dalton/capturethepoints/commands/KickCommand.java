@@ -1,0 +1,50 @@
+package me.dalton.capturethepoints.commands;
+
+import me.dalton.capturethepoints.CaptureThePoints;
+import me.dalton.capturethepoints.enums.ArenaLeaveReason;
+
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+
+public class KickCommand extends CTPCommand {
+   
+    /** Allows an admin to kick a player from a CTP game. */
+    public KickCommand(CaptureThePoints instance) {
+        super.ctp = instance;
+        super.aliases.add("kick");
+        super.notOpCommand = false;
+        super.requiredPermissions = new String[]{"ctp.*", "ctp.admin.kick", "ctp.admin"};
+        super.senderMustBePlayer = false;
+        super.minParameters = 3;
+        super.maxParameters = 3;
+        super.usageTemplate = "/ctp kick <player>";
+    }
+
+    @Override
+    public void perform() {
+        if (ctp.mainArena == null) {
+            sendMessage(ChatColor.RED + "Please create an arena first");
+            return;
+        }
+        
+        if (ctp.mainArena.getLobby() == null) {
+            sendMessage(ChatColor.RED + "Please create arena lobby");
+            return;
+        }
+            
+        Player bob = ctp.getServer().getPlayer(parameters.get(2));
+        
+        if (bob == null) {
+            sendMessage(ChatColor.RED + "Could not find the online player " + ChatColor.GOLD + parameters.get(2) + ChatColor.RED +".");
+            return;
+        }
+        
+        if (ctp.blockListener.isAlreadyInGame(bob.getName())) {
+            ctp.sendMessage(bob, ChatColor.GREEN + sender.getName() + ChatColor.WHITE + " kicked you from CTP game!");
+            ctp.leaveGame(bob, ArenaLeaveReason.PLAYER_KICK_COMMAND);
+        } else {
+            sendMessage(ChatColor.GOLD + parameters.get(2) + ChatColor.RED +" is not playing CTP!");
+        }
+        return;
+    }
+}
